@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>老师口头禅博物馆</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:"Microsoft YaHei",sans-serif;
+    background:linear-gradient(135deg,#0f172a,#1e3a8a,#2563eb);
+    min-height:100vh;
+}
+
+/* 顶部 */
+header{
+    text-align:center;
+    color:white;
+    padding:60px 20px;
+}
+
+header h1{
+    font-size:3rem;
+    margin-bottom:10px;
+}
+
+header p{
+    opacity:.9;
+}
+
+/* 容器 */
+.container{
+    width:90%;
+    max-width:1200px;
+    margin:auto;
+}
+
+/* 毛玻璃 */
+.glass{
+    background:rgba(255,255,255,0.15);
+    backdrop-filter:blur(15px);
+    border:1px solid rgba(255,255,255,.2);
+    border-radius:20px;
+}
+
+/* Hero */
+.hero{
+    padding:40px;
+    text-align:center;
+    color:white;
+    margin-bottom:30px;
+}
+
+.hero h2{
+    margin-bottom:15px;
+}
+
+/* 标题 */
+.section-title{
+    color:white;
+    margin:25px 0 15px;
+}
+
+/* 跑马灯电子屏容器 */
+.today-card{
+    padding:20px;
+    background:#000000; /* 纯黑底色 */
+    border: 3px solid #334155;
+    border-radius: 15px;
+    margin-bottom:30px;
+    box-shadow:inset 0 0 20px rgba(37,99,235,0.5), 0 5px 15px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: hidden; /* 裁剪隐藏超出屏幕的字 */
+    display: flex;
+    align-items: center;
+    height: 80px;
+}
+
+/* 跑马灯轨道的动态效果 */
+.marquee-track {
+    display: inline-block;
+    white-space: nowrap; /* 强制所有字在一行，绝不换行 */
+    /* 核心改动：由于内部复制了双倍文本，这里只需要平滑向左平移 50% 就能实现无缝首尾衔接 */
+    animation: marqueeScroll 30s linear infinite; 
+}
+
+/* 鼠标悬停时暂停滚动，方便仔细观看 */
+.today-card:hover .marquee-track {
+    animation-play-state: paused;
+}
+
+.marquee-content {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #00ffcc; /* 高亮荧光绿 */
+    letter-spacing: 2px;
+    display: inline-block;
+}
+
+/* 每个名次板块之间的隔离间距 */
+.marquee-item {
+    margin-right: 120px; 
+    display: inline-block;
+}
+
+/* 特殊名次颜色高亮 */
+.rank-1 { color: #fef08a; } /* 金黄 */
+.rank-2 { color: #e2e8f0; } /* 银白 */
+.rank-3 { color: #fed7aa; } /* 橘铜 */
+
+/* 绝对无缝滚动的核心动画：从 0 平移到 -50%（刚好第一套播完，第二套接上的一瞬间）重置循环 */
+@keyframes marqueeScroll {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+    100% {
+        transform: translate3d(-50%, 0, 0); 
+    }
+}
+
+/* 科目网格 */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
+}
+
+.card{
+    padding:25px;
+    text-align:center;
+    color:white;
+    cursor:pointer;
+    transition:.3s;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.card:hover{
+    transform:translateY(-8px) scale(1.03);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+.card h3{
+    font-size:1.6rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+.card p{
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
+/* 子科目选择按钮样式 */
+.sub-selectors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.sub-btn {
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+    text-align: center;
+}
+
+.sub-btn:hover {
+    background: white;
+    color: #1e3a8a;
+    transform: translateY(-3px);
+}
+
+.sub-btn.active {
+    background: linear-gradient(135deg, #06b6d4, #3b82f6);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 10px rgba(6, 182, 212, 0.4);
+}
+
+/* 投稿区 */
+.form-box{
+    padding:25px;
+    margin-top:20px;
+}
+
+input,textarea,select{
+    width:100%;
+    padding:12px;
+    margin-bottom:12px;
+    border:none;
+    border-radius:10px;
+    font-family: inherit;
+}
+
+button{
+    padding:12px 18px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    color:white;
+    font-weight:bold;
+    background:linear-gradient(135deg,#3b82f6,#06b6d4);
+}
+
+button:hover{
+    opacity:.9;
+}
+
+/* 引语卡片与互动按钮 */
+.quote{
+    background:white;
+    padding:18px;
+    border-radius:15px;
+    margin-bottom:15px;
+}
+
+.quote button{
+    margin-top:8px;
+    margin-right:5px;
+    transition: 0.2s;
+}
+
+.btn-liked {
+    background: linear-gradient(135deg, #ef4444, #f43f5e) !important;
+}
+
+.hidden{
+    display:none;
+}
+
+.back-btn{
+    margin-bottom:20px;
+}
+
+/* 页脚 */
+footer{
+    text-align:center;
+    color:white;
+    margin-top:50px;
+    padding:30px;
+}
+</style>
+</head>
+
+<body>
+
+<img src="https://www.peiyuanhs.edu.my/home/wp-content/uploads/2017/11/%E8%83%8C%E6%99%AF_6.jpg" alt="博物馆封面图" style="width: 100vw; max-width: 100%; height: 300px; margin-left: calc(-50vw + 50%); margin-bottom: 20px; border-radius: 0px; object-fit: cover;">
+<header>
+    <h1>🏫 老师口头禅博物馆</h1>
+    <p>校园经典语录收藏馆</p>
+</header>
+
+<div class="container">
+
+    <div class="hero glass">
+        <h2>🎤 收录校园最经典的一句话</h2>
+        <p>这里保存老师们最经典、最洗脑、最令人印象深刻的口头禅，让未来学弟学妹也能感受到老师们的魅力。</p>
+        <p style="margin-top: 5px; color: #fecdd3; font-weight: bold;">切记！！！此投稿网站仅用于娱乐</p>
+    </div>
+
+    <div id="home">
+        <h2 class="section-title" id="rankTitle">🔥 经典口头禅风云榜 (前三名实时滚动)</h2>
+        <div class="today-card" id="marqueeContainer">
+            <div id="today" style="width: 100%;">暂无榜单数据</div>
+        </div>
+
+        <h2 class="section-title">📚 科目区域</h2>
+        <div id="subjects" class="grid"></div>
+
+        <h2 class="section-title">📮 投稿区</h2>
+        <div class="form-box glass">
+            <select id="subjectInput">
+                <option value="">-- 请选择科目 --</option>
+                <option value="会计">会计</option>
+                <option value="商业">商业</option>
+                <option value="经济">经济</option>
+                <option value="生物">生物</option>
+                <option value="化学">化学</option>
+                <option value="物理">物理</option>
+                <option value="华语">华语</option>
+                <option value="英文">英文</option>
+                <option value="马来文">马来文</option>
+                <option value="历史">历史</option>
+                <option value="地理">地理</option>
+                <option value="美术">美术</option>
+                <option value="数学">数学</option>
+                <option value="电脑">电脑</option>
+                <option value="行政">行政</option>
+            </select>
+            <input type="text" id="teacherName" placeholder="老师名字">
+            <input type="text" id="teacherNick" placeholder="老师绰号">
+            <textarea id="quoteText" rows="4" placeholder="老师口头禅"></textarea>
+            <button onclick="submitPost()">提交投稿</button>
+        </div>
+    </div>
+
+    <div id="subPage" class="hidden">
+        <button class="back-btn" onclick="goHome()">⬅ 返回主页</button>
+        <h2 class="section-title" id="subTitle"></h2>
+        
+        <div id="subSelectors" class="sub-selectors-grid"></div>
+        
+        <div id="quoteList"></div>
+    </div>
+
+</div>
+
+<footer>
+    老师口头禅博物馆 © 2026
+</footer>
+
+<script>
+const majorSubjects = {
+    "商科": { subs: ["会计", "商业", "经济"], img: "https://tse1.mm.bing.net/th/id/OIP.pmWimAXk_n0h_Wv3jSImRAHaEZ?r=0&rs=1&pid=ImgDetMain&o=7&rm=3" },
+    "理科": { subs: ["生物", "化学", "物理"], img: "https://wallpapers.com/images/hd/chalkboard-with-equations-xfdmdzbu2itfe95x.jpg" },
+    "三语": { subs: ["华语", "英文", "马来文"], img: "https://thumbs.dreamstime.com/b/people-chat-bubbles-foreign-language-conversation-flat-color-line-icon-vector-translation-symbol-sign-illustration-design-161480643.jpg" },
+    "文美科": { subs: ["历史", "地理", "美术"], img: "https://www.conncoll.edu/media/major-images/Art.jpg" },
+    "数学": { subs: ["数学"], img: "https://assets.tes.com/magazine-attachments/s3fs-public/styles/article_image_mobile/public/media/image/archived/maths_blackboard.jpg.webp?itok=H-udPPcb" },
+    "电脑": { subs: ["电脑"], img: "https://learn-attachment.microsoft.com/api/attachments/154759-image.png?platform=QnA" },
+    "行政": { subs: ["行政"], img: "https://media.licdn.com/dms/image/v2/D4D12AQFEC_wLrW2r8g/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1714655956820?e=2147483647&v=beta&t=Ry89CYzJWzKqO1VOJAizs00ohbB8fLEDwGzI6q5a5as" }
+};
+
+let currentMajor = ""; 
+let currentSelectedSub = ""; 
+
+const defaultQuotes = {
+    "华语": [{ "id": "hy_1", "teacher": "张老师", "nick": "老张", "text": "你们这届是我带过最差的一届！", "likes": 5, "shares": 2, "date": "2026-06-13" }],
+    "数学": [{ "id": "sx_1", "teacher": "李老师", "nick": "Math魔王", "text": "这道题我讲过很多遍了，这是送分题啊！", "likes": 25, "shares": 4, "date": "2026-06-13" }],
+    "马来文": [{ "id": "ml_1", "teacher": "Cikgu Ahmad", "nick": "阿末达人", "text": "Sila dengar betul-betul, ini keluar exam!", "likes": 12, "shares": 1, "date": "2026-06-13" }]
+};
+
+if(!localStorage.getItem("quotes")){
+    localStorage.setItem("quotes", JSON.stringify(defaultQuotes));
+}
+if(!localStorage.getItem("myLikes")){
+    localStorage.setItem("myLikes", JSON.stringify({}));
+}
+
+let quotes = JSON.parse(localStorage.getItem("quotes")) || {};
+let submissions = JSON.parse(localStorage.getItem("submissions")) || [];
+
+function getTodayString() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// 核心优化：利用双复制拼接机制，让最后一名紧贴着第一名，实现完美无缝流
+function updateRankings(){
+    let allQuotes = [];
+    Object.keys(quotes).forEach(sub => {
+        quotes[sub].forEach(q => {
+            allQuotes.push({ ...q, subject: sub });
+        });
+    });
+
+    const todayBox = document.getElementById("today");
+
+    if(allQuotes.length === 0){
+        todayBox.innerHTML = "<div style='color:#94a3b8; text-align:center;'>暂无数据</div>";
+        return;
+    }
+
+    // 按点赞数降序排序
+    allQuotes.sort((a, b) => b.likes - a.likes);
+    
+    // 计算包含并列的真实前三名数据
+    let displayList = [];
+    let currentRank = 1;
+    let lastLikes = -1;
+    let rankCounter = 0;
+
+    for (let i = 0; i < allQuotes.length; i++) {
+        const item = allQuotes[i];
+        if (item.likes !== lastLikes) {
+            if (rankCounter >= 3) break; 
+            currentRank = displayList.length + 1;
+            rankCounter++;
+        }
+        displayList.push({ ...item, displayRank: currentRank });
+        lastLikes = item.likes;
+    }
+
+    // 生成单组排行榜 HTML 字符串
+    let singleGroupHtml = "";
+    displayList.forEach(item => {
+        let rankClass = `rank-${item.displayRank}`;
+        singleGroupHtml += `
+            <span class="marquee-item">
+                <strong class="${rankClass}">【第 ${item.displayRank} 名】</strong> 
+                ${item.teacher}老师 (${item.nick}) 
+                <span style="color:#64748b; font-size:1.1rem;">[${item.subject}]</span> : 
+                <span style="color:#ffffff;">“${item.text}”</span> 
+                <span style="color:#e11d48; margin-left:8px;">👍 ${item.likes}赞</span>
+            </span>
+        `;
+    });
+
+    // 核心重构：将生成的榜单HTML复制两遍拼在一起 (${singleGroupHtml}${singleGroupHtml})
+    // 这样当第一遍的最后一名走完时，第二遍的第一名紧跟其后，完成神仙衔接！
+    todayBox.innerHTML = `
+        <div class="marquee-track">
+            <div class="marquee-content">
+                ${singleGroupHtml}${singleGroupHtml}
+            </div>
+        </div>
+    `;
+}
+
+// 渲染大类
+function renderSubjects(){
+    const container = document.getElementById("subjects");
+    container.innerHTML = "";
+    Object.keys(majorSubjects).forEach(major => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.style.background = `linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.6)), url('${majorSubjects[major].img}') no-repeat center/cover`;
+        card.innerHTML = `
+            <h3>${major}</h3>
+            <p style="margin-top:10px; font-size:0.9rem; opacity:0.85;">${majorSubjects[major].subs.join(" · ")}</p>
+        `;
+        card.onclick = () => openMajor(major);
+        container.appendChild(card);
+    });
+}
+
+function openMajor(major){
+    currentMajor = major;
+    document.getElementById("home").classList.add("hidden");
+    document.getElementById("subPage").classList.remove("hidden");
+    document.getElementById("subTitle").innerText = major + " 栏目";
+    renderSubSelectors();
+}
+
+function renderSubSelectors(){
+    const selectorBox = document.getElementById("subSelectors");
+    selectorBox.innerHTML = "";
+    const subList = majorSubjects[currentMajor].subs;
+    currentSelectedSub = subList[0]; 
+
+    subList.forEach(sub => {
+        const btn = document.createElement("div");
+        btn.className = `sub-btn ${sub === currentSelectedSub ? 'active' : ''}`;
+        btn.innerText = sub;
+        btn.onclick = () => selectSub(sub, btn);
+        selectorBox.appendChild(btn);
+    });
+    renderQuotes();
+}
+
+function selectSub(sub, clickedBtn){
+    currentSelectedSub = sub;
+    document.querySelectorAll('.sub-btn').forEach(btn => btn.classList.remove('active'));
+    clickedBtn.classList.add('active');
+    renderQuotes();
+}
+
+function goHome(){
+    currentMajor = "";
+    currentSelectedSub = "";
+    document.getElementById("subPage").classList.add("hidden");
+    document.getElementById("home").classList.remove("hidden");
+    updateRankings(); 
+}
+
+// 渲染子类列表
+function renderQuotes(){
+    const box = document.getElementById("quoteList");
+    box.innerHTML = "";
+    let total = 0;
+    const targetSub = currentSelectedSub;
+    const myLikes = JSON.parse(localStorage.getItem("myLikes")) || {};
+    
+    (quotes[targetSub] || []).forEach((q, i) => {
+        total++;
+        const isLiked = myLikes[q.id] === true;
+
+        box.innerHTML += `
+            <div class="quote" style="color:#333;">
+                <b>👨‍🏫 ${q.teacher} (${q.nick})</b> <span style="color:#666; font-size:0.9rem;">[${targetSub}]</span><br><br>
+                <p style="font-size:1.1rem; color:#111;">"${q.text}"</p><br>
+                <button onclick="toggleLike('${targetSub}', ${i})" class="${isLiked ? 'btn-liked' : ''}">
+                    ${isLiked ? '👎 取消点赞' : '👍 点赞'} (${q.likes})
+                </button>
+                <button onclick="share('${targetSub}',${i})">🔄 分享 (${q.shares})</button>
+            </div>
+        `;
+    });
+
+    if(total === 0){
+        box.innerHTML = `<div class='quote' style='color:#666;'>【${targetSub}】下暂无审核通过的口头禅，快去投稿吧！</div>`;
+    }
+}
+
+// 点赞引擎
+function toggleLike(sub, i){
+    let myLikes = JSON.parse(localStorage.getItem("myLikes")) || {};
+    const q = quotes[sub][i];
+
+    if(!q.id) { q.id = sub + "_" + Date.now() + "_" + i; }
+
+    if(myLikes[q.id]) {
+        q.likes = Math.max(0, q.likes - 1); 
+        delete myLikes[q.id]; 
+    } else {
+        q.likes++;
+        myLikes[q.id] = true; 
+    }
+
+    localStorage.setItem("myLikes", JSON.stringify(myLikes));
+    saveQuotes();
+    renderQuotes();
+    updateRankings(); 
+}
+
+function submitPost(){
+    const teacher = document.getElementById("teacherName").value.trim();
+    const nick = document.getElementById("teacherNick").value.trim();
+    const text = document.getElementById("quoteText").value.trim();
+    const subject = document.getElementById("subjectInput").value.trim();
+
+    if(!teacher || !nick || !text || !subject){
+        alert("请填写完整所有内容和科目！");
+        return;
+    }
+
+    const todayStr = getTodayString();
+    const uniqueId = "user_" + Date.now() + "_" + Math.floor(Math.random()*1000);
+
+    submissions = JSON.parse(localStorage.getItem("submissions")) || [];
+    submissions.push({ id: uniqueId, teacher, nick, text, subject, date: todayStr, likes: 0, shares: 0 });
+    localStorage.setItem("submissions", JSON.stringify(submissions));
+    
+    document.getElementById("teacherName").value = "";
+    document.getElementById("teacherNick").value = "";
+    document.getElementById("quoteText").value = "";
+    document.getElementById("subjectInput").value = "";
+
+    alert("投稿成功！已提交至后台，请等待管理员审核。");
+}
+
+function share(sub, i){
+    quotes[sub][i].shares++;
+    saveQuotes();
+    renderQuotes();
+    const q = quotes[sub][i];
+    const shareText = `【老师口头禅博物馆】分享：\n${q.teacher} 老师 (${q.nick}) 在 [${sub}] 课上说：\n"${q.text}"\n点击链接看高二信义同学们的珍藏：${window.location.href}`;
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(shareText).then(() => { alert("复制成功！快发给班级群吧！"); }).catch(() => { fallbackCopy(shareText); });
+    } else { fallbackCopy(shareText); }
+}
+
+function fallbackCopy(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    document.body.appendChild(textArea);
+    textArea.focus(); textArea.select();
+    try { document.execCommand('copy'); alert("复制成功！快发给班级群吧！"); } catch (err) { alert("自动复制失败。"); }
+    document.body.removeChild(textArea);
+}
+
+function saveQuotes(){
+    localStorage.setItem("quotes", JSON.stringify(quotes));
+}
+
+window.addEventListener('storage', function(e){
+    if(e.key === "quotes"){
+        quotes = JSON.parse(e.newValue) || {};
+        if(currentSelectedSub) renderQuotes();
+        updateRankings();
+    }
+});
+
+// 初始化加载
+renderSubjects();
+updateRankings();
+
+// 自动检测刷新（15秒一次）
+setInterval(() => { updateRankings(); }, 15000);
+</script>
+</body>
+</html>
