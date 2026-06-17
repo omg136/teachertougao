@@ -518,14 +518,14 @@ async function toggleLike(id, currentLikes){
         myLikes[id] = true; 
     }
 
-    // 实时修改云数据库的赞数
+    // 修复：确保用准确的主键定位
     const { error } = await supabase
         .from('quotes')
         .update({ likes: newLikes })
         .eq('id', id);
 
     if (error) {
-        alert("操作失败！请去 Supabase 确认 quotes 表的 RLS 权限是否关闭（Disable）。");
+        alert("操作失败！请去 Supabase 确认 RLS 权限关闭，并且 id 列允许递增。");
         return;
     }
 
@@ -545,13 +545,14 @@ async function submitPost(){
         return;
     }
 
-    // 插入数据到云端
+    // 插入数据到云端（id 留给数据库自动递增生成）
     const { error } = await supabase
         .from('quotes')
         .insert([{ teacher, nick, text, subject, likes: 0, shares: 0 }]);
 
     if (error) {
-        alert("投稿失败！请检查数据库连通状态。");
+        alert("投稿失败！请检查数据库连通状态以及列字段名字是否对齐。");
+        console.error(error);
         return;
     }
 
@@ -567,7 +568,7 @@ async function submitPost(){
 
 // 分享计数同步云端
 async function shareCloud(id){
-    const item = globalQuotes.find(q => q.id === id);
+    const item = globalQuotes.find(q => q.id == id);
     if (!item) return;
 
     const newShares = (item.shares || 0) + 1;
@@ -597,7 +598,7 @@ function fallbackCopy(text) {
 renderSubjects();
 fetchQuotesFromCloud();
 
-// 每 15 秒云端完全自动刷新对齐（防止别人点赞了你这边没反应）
+// 每 15 秒云端完全自动刷新对齐
 setInterval(() => { 
     fetchQuotesFromCloud(); 
 }, 15000);
