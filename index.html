@@ -70,13 +70,13 @@ header p{
 /* 跑马灯电子屏容器 */
 .today-card{
     padding:20px;
-    background:#000000; /* 纯黑底色 */
+    background:#000000;
     border: 3px solid #334155;
     border-radius: 15px;
     margin-bottom:30px;
     box-shadow:inset 0 0 20px rgba(37,99,235,0.5), 0 5px 15px rgba(0,0,0,0.3);
     position: relative;
-    overflow: hidden; /* 裁剪隐藏超出屏幕的字 */
+    overflow: hidden;
     display: flex;
     align-items: center;
     height: 80px;
@@ -85,12 +85,10 @@ header p{
 /* 跑马灯轨道的动态效果 */
 .marquee-track {
     display: inline-block;
-    white-space: nowrap; /* 强制所有字在一行，绝不换行 */
-    /* 核心改动：由于内部复制了双倍文本，这里只需要平滑向左平移 50% 就能实现无缝首尾衔接 */
+    white-space: nowrap;
     animation: marqueeScroll 30s linear infinite; 
 }
 
-/* 鼠标悬停时暂停滚动，方便仔细观看 */
 .today-card:hover .marquee-track {
     animation-play-state: paused;
 }
@@ -98,30 +96,23 @@ header p{
 .marquee-content {
     font-size: 1.4rem;
     font-weight: bold;
-    color: #00ffcc; /* 高亮荧光绿 */
+    color: #00ffcc;
     letter-spacing: 2px;
     display: inline-block;
 }
 
-/* 每个名次板块之间的隔离间距 */
 .marquee-item {
     margin-right: 120px; 
     display: inline-block;
 }
 
-/* 特殊名次颜色高亮 */
-.rank-1 { color: #fef08a; } /* 金黄 */
-.rank-2 { color: #e2e8f0; } /* 银白 */
-.rank-3 { color: #fed7aa; } /* 橘铜 */
+.rank-1 { color: #fef08a; }
+.rank-2 { color: #e2e8f0; }
+.rank-3 { color: #fed7aa; }
 
-/* 绝对无缝滚动的核心动画：从 0 平移到 -50%（刚好第一套播完，第二套接上的一瞬间）重置循环 */
 @keyframes marqueeScroll {
-    0% {
-        transform: translate3d(0, 0, 0);
-    }
-    100% {
-        transform: translate3d(-50%, 0, 0); 
-    }
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-50%, 0, 0); }
 }
 
 /* 科目网格 */
@@ -335,7 +326,6 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 全局变量：存放从云端实时下载的数据
 let globalQuotes = []; 
 
 const majorSubjects = {
@@ -351,36 +341,28 @@ const majorSubjects = {
 let currentMajor = ""; 
 let currentSelectedSub = ""; 
 
-// 从云端获取数据的引擎
 async function fetchQuotesFromCloud() {
-    const { data, error } = await supabase
-        .from('quotes')
-        .select('*');
-
-    if (error) {
-        console.error("同步数据库失败:", error);
-        return;
-    }
-    
-    globalQuotes = data || [];
-    updateRankings();
-    if (currentSelectedSub) {
-        renderQuotes();
+    try {
+        const { data, error } = await supabase.from('quotes').select('*');
+        if (error) throw error;
+        globalQuotes = data || [];
+        updateRankings();
+        if (currentSelectedSub) {
+            renderQuotes();
+        }
+    } catch (err) {
+        console.error("同步数据库失败:", err);
     }
 }
 
-// 刷新滚动排行榜
 function updateRankings(){
     const todayBox = document.getElementById("today");
-
     if(globalQuotes.length === 0){
         todayBox.innerHTML = "<div style='color:#94a3b8; text-align:center;'>暂无数据</div>";
         return;
     }
 
-    // 复制数组并按照赞数从大到小排序
     let allQuotes = [...globalQuotes].sort((a, b) => (b.likes || 0) - (a.likes || 0));
-    
     let displayList = [];
     let currentRank = 1;
     let lastLikes = -1;
@@ -403,9 +385,9 @@ function updateRankings(){
         singleGroupHtml += `
             <span class="marquee-item">
                 <strong class="${rankClass}">【第 ${item.displayRank} 名】</strong> 
-                ${item.teacher}老师 (${item.nick || '无绰号'}) 
-                <span style="color:#64748b; font-size:1.1rem;">[${item.subject}]</span> : 
-                <span style="color:#ffffff;">“${item.text}”</span> 
+                ${item.teacher || '未知'}老师 (${item.nick || '无绰号'}) 
+                <span style="color:#64748b; font-size:1.1rem;">[${item.subject || '未知'}]</span> : 
+                <span style="color:#ffffff;">“${item.text || ''}”</span> 
                 <span style="color:#e11d48; margin-left:8px;">👍 ${item.likes || 0}赞</span>
             </span>
         `;
@@ -420,7 +402,6 @@ function updateRankings(){
     `;
 }
 
-// 渲染主页科目大类
 function renderSubjects(){
     const container = document.getElementById("subjects");
     container.innerHTML = "";
@@ -476,12 +457,10 @@ function goHome(){
     updateRankings(); 
 }
 
-// 渲染具体的名言列表
 function renderQuotes(){
     const box = document.getElementById("quoteList");
     box.innerHTML = "";
     
-    // 筛选出符合当前子科目的数据
     const filtered = globalQuotes.filter(q => q.subject === currentSelectedSub);
     const myLikes = JSON.parse(localStorage.getItem("myLikes")) || {};
     
@@ -490,8 +469,8 @@ function renderQuotes(){
 
         box.innerHTML += `
             <div class="quote" style="color:#333;">
-                <b>👨‍🏫 ${q.teacher} (${q.nick || '无绰号'})</b> <span style="color:#666; font-size:0.9rem;">[${q.subject}]</span><br><br>
-                <p style="font-size:1.1rem; color:#111;">"${q.text}"</p><br>
+                <b>👨‍🏫 ${q.teacher || '未知'} (${q.nick || '无绰号'})</b> <span style="color:#666; font-size:0.9rem;">[${q.subject || ''}]</span><br><br>
+                <p style="font-size:1.1rem; color:#111;">"${q.text || ''}"</p><br>
                 <button onclick="toggleLike('${q.id}', ${q.likes || 0})" class="${isLiked ? 'btn-liked' : ''}">
                     ${isLiked ? '👎 取消点赞' : '👍 点赞'} (${q.likes || 0})
                 </button>
@@ -505,7 +484,6 @@ function renderQuotes(){
     }
 }
 
-// 云端互赞核心功能
 async function toggleLike(id, currentLikes){
     let myLikes = JSON.parse(localStorage.getItem("myLikes")) || {};
     let newLikes = currentLikes;
@@ -518,22 +496,20 @@ async function toggleLike(id, currentLikes){
         myLikes[id] = true; 
     }
 
-    // 实时修改云数据库的赞数
     const { error } = await supabase
         .from('quotes')
         .update({ likes: newLikes })
         .eq('id', id);
 
     if (error) {
-        alert("操作失败！请去 Supabase 确认 quotes 表的 RLS 权限是否关闭（Disable）。");
+        alert("操作失败！请去 Supabase 确认 RLS 权限关闭。");
         return;
     }
 
     localStorage.setItem("myLikes", JSON.stringify(myLikes));
-    await fetchQuotesFromCloud(); // 重新拉取新数据
+    await fetchQuotesFromCloud();
 }
 
-// 云端投稿核心功能
 async function submitPost(){
     const teacher = document.getElementById("teacherName").value.trim();
     const nick = document.getElementById("teacherNick").value.trim();
@@ -545,29 +521,27 @@ async function submitPost(){
         return;
     }
 
-    // 插入数据到云端
     const { error } = await supabase
         .from('quotes')
         .insert([{ teacher, nick, text, subject, likes: 0, shares: 0 }]);
 
     if (error) {
         alert("投稿失败！请检查数据库连通状态。");
+        console.error(error);
         return;
     }
 
-    // 清空输入框
     document.getElementById("teacherName").value = "";
     document.getElementById("teacherNick").value = "";
     document.getElementById("quoteText").value = "";
     document.getElementById("subjectInput").value = "";
 
     alert("投稿成功！数据已实时同步至云端资料库！");
-    await fetchQuotesFromCloud(); // 立即刷新
+    await fetchQuotesFromCloud();
 }
 
-// 分享计数同步云端
 async function shareCloud(id){
-    const item = globalQuotes.find(q => q.id === id);
+    const item = globalQuotes.find(q => q.id == id);
     if (!item) return;
 
     const newShares = (item.shares || 0) + 1;
@@ -579,7 +553,7 @@ async function shareCloud(id){
 
     await fetchQuotesFromCloud();
 
-    const shareText = `【老师口头禅博物馆】分享：\n${item.teacher} 老师 (${item.nick || '无绰号'}) 在 [${item.subject}] 课上说：\n"${item.text}"\n快点击链接看高二信义同学们的珍藏：${window.location.href}`;
+    const shareText = `【老师口头禅博物馆】分享：\n${item.teacher} 老师 (${item.nick || '无绰号'}) 在 [${item.subject}] 课上说：\n"${item.text}"\n快点击链接查看：${window.location.href}`;
     fallbackCopy(shareText);
 }
 
@@ -593,11 +567,10 @@ function fallbackCopy(text) {
     document.body.removeChild(textArea);
 }
 
-// 初始化启动
+// 核心修复：不等待大图片加载，网页打开立刻秒切科目并拉取数据
 renderSubjects();
 fetchQuotesFromCloud();
 
-// 每 15 秒云端完全自动刷新对齐（防止别人点赞了你这边没反应）
 setInterval(() => { 
     fetchQuotesFromCloud(); 
 }, 15000);
