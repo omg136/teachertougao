@@ -502,7 +502,7 @@ async function toggleLike(id, currentLikes){
         .eq('id', id);
 
     if (error) {
-        alert("操作失败！请去 Supabase 确认 RLS 权限关闭，并且 id 列允许自动生成。");
+        alert("操作失败！请去 Supabase 确认 RLS 权限关闭。");
         return;
     }
 
@@ -567,11 +567,9 @@ function fallbackCopy(text) {
     document.body.removeChild(textArea);
 }
 
-// 确保在页面加载时正确触发科目渲染和云端抓取
-window.onload = function() {
-    renderSubjects();
-    fetchQuotesFromCloud();
-};
+// 核心修复：不等待大图片加载，网页打开立刻秒切科目并拉取数据
+renderSubjects();
+fetchQuotesFromCloud();
 
 setInterval(() => { 
     fetchQuotesFromCloud(); 
